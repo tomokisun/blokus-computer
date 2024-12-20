@@ -32,6 +32,37 @@ export default class ComputerBase {
   }
 
   /**
+   * 配置可能な全ての候補手を算出します。
+   * ピースの全ての回転・反転組み合わせ(8通り)を試し、ボード上の全座標で、配置可能かどうかをチェックして候補手リストを作成します。
+   * @param board 現在のボード状態
+   * @param pieces コンピュータプレイヤーが所有するピース配列
+   * @returns 配置可能な全候補手の配列
+   */
+  computeCandidate(board: Board, pieces: Piece[]): Candidate[] {
+    const candidates: Candidate[] = [];
+    for (const piece of pieces) {
+      const uniqueOrientations = this.generateUniqueOrientations(piece);
+      for (const [rotationCase, flippedCase, _] of uniqueOrientations) {
+        const testPiece = { ...piece, orientation: { rotation: rotationCase, flipped: flippedCase } };
+        for (let x = 0; x < Board.width; x++) {
+          for (let y = 0; y < Board.height; y++) {
+            const origin: Coordinate = { x, y };
+            if (board.canPlacePiece(testPiece, origin)) {
+              candidates.push({
+                piece,
+                origin,
+                rotation: rotationCase,
+                flipped: flippedCase
+              });
+            }
+          }
+        }
+      }
+    }
+    return candidates;
+  }
+
+  /**
    * 指定されたピースに対し、全ての回転（Rotation）および反転有無（flipped）の組み合わせで形状を変換し、
    * ユニークな形状のパターンを生成・収集します。
    * 

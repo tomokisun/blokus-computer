@@ -51,7 +51,24 @@ describe('Board', () => {
       };
       expect(() => board.checkFirstPlacement(piece, finalCoords)).not.toThrow();
     });
-  })
+
+    it('throws an error if the player has not placed the first piece', () => {
+      const board = createBoard();
+      const player = Player.Red;
+      const coordinate = Board.startingCorner(player);
+      const finalCoords = [{ x: coordinate.x + 1, y: coordinate.y + 1 }]
+      const piece: Piece = {
+        id: '1',
+        owner: player,
+        baseShape: finalCoords,
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      expect(() => board.checkFirstPlacement(piece, finalCoords)).toThrowError('firstMoveMustIncludeCorner');
+    });
+  });
 
   describe('checkSubsequentPlacement', () => {
     it('returns true if the player has placed a piece adjacent to another piece', () => {

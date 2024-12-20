@@ -1,6 +1,6 @@
 import Cell from './data-types/cell';
 import Coordinate, { diagonalNeighbors, edgeNeighbors, toKey } from './data-types/coordinate';
-import Piece from './data-types/piece';
+import Piece, { transformedShape } from './data-types/piece';
 import Player from './data-types/player';
 
 export default class Board {
@@ -8,6 +8,75 @@ export default class Board {
   static height = 20;
 
   constructor(public cells: Cell[][]) {}
+
+  /**
+   * 指定のピースを特定の座標に置けるかどうか判定します（実際には置かない）。
+   * @param piece 配置可否を判定するピース
+   * @param origin 起点座標
+   * @returns 配置可能なら `true`、不可能なら `false`
+   */
+  canPlacePiece(piece: Piece, origin: Coordinate): boolean {
+    const finalCoords = this.computeFinalCoordinates(piece, origin);
+    try {
+      this.validatePlacement(piece, finalCoords); 
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // MARK: - Private methods
+
+  /**
+   * ピースを指定座標に配置した場合のセル座標の一覧を取得します。
+   * @param piece 配置対象のピース
+   * @param origin 起点座標
+   * @returns ピースが占有する全セルの座標リスト
+   */
+  computeFinalCoordinates(piece: Piece, origin: Coordinate): Coordinate[] {
+    const shape = transformedShape(piece);
+    return shape.map(c => ({ x: origin.x + c.x, y: origin.y + c.y }));
+  }
+
+  /**
+   * ピース配置時のバリデーションを行います。
+   * @param piece 配置するピース
+   * @param finalCoords ピースが占有するセル座標
+   */
+  validatePlacement(piece: Piece, finalCoords: Coordinate[]) {
+    this.checkBasicPlacementRules(finalCoords);
+    const isFirstMove = !this.hasPlacedFirstPiece(piece.owner);
+    if (isFirstMove) {
+      this.checkFirstPlacement(piece, finalCoords);
+    } else {
+      this.checkSubsequentPlacement(piece, finalCoords);
+    }
+  }
+
+  /**
+   * 基本的な配置チェック：ボード外・セル占有の有無を確認します。
+   * @param finalCoords ピースが占有するセル座標
+   */
+  checkBasicPlacementRules(finalCoords: Coordinate[]) {
+    for (const bc of finalCoords) {
+      if (!this.isValidCoordinate(bc)) {
+        throw new Error('outOfBounds');
+      }
+      const cell = this.cells[bc.x][bc.y];
+      if (cell.owner) {
+        throw new Error('cellOccupied');
+      }
+    }
+  }
+
+  /**
+   * 指定した座標がボード上有効範囲内かを判定します。
+   * @param c 座標
+   * @returns 有効範囲内なら `true`、範囲外なら `false`
+   */
+  isValidCoordinate(c: Coordinate): boolean {
+    return c.x >= 0 && c.x < Board.width && c.y >= 0 && c.y < Board.height
+  }
 
   /**
    * 初回配置におけるチェック：プレイヤーの開始コーナーを含んでいるか確認します。

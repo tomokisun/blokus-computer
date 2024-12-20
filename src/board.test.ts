@@ -34,6 +34,156 @@ describe('Board', () => {
     });
   });
 
+  describe('canPlacePiece', () => {
+    it('returns true if the piece can be placed', () => {
+      const board = createBoard();
+      const piece: Piece = {
+        id: '1',
+        owner: Player.Red,
+        baseShape: [{ x: 0, y: 0 }],
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      const origin = { x: 0, y: 0 };
+      const result = board.canPlacePiece(piece, origin);
+      expect(result).toBeTrue();
+    });
+  })
+
+  describe('computeFinalCoordinates', () => {
+    it('returns the correct coordinates', () => {
+      const board = createBoard();
+      const piece: Piece = {
+        id: '1',
+        owner: Player.Red,
+        baseShape: [{ x: 1, y: 1 }],
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      const origin = { x: 0, y: 0 };
+      const result = board.computeFinalCoordinates(piece, origin);
+      expect(result).toEqual([{ x: 1, y: 1 }]);
+    });
+  });
+
+  describe('validatePlacement', () => {
+    it('calls checkFirstPlacement if the player has not placed the first piece', () => {
+      const board = createBoard();
+      const player = Player.Red;
+      const coordinate = Board.startingCorner(player);
+      const finalCoords = [{ x: coordinate.x + 1, y: coordinate.y + 1 }]
+      const piece: Piece = {
+        id: '1',
+        owner: player,
+        baseShape: finalCoords,
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      expect(() => board.validatePlacement(piece, finalCoords)).toThrowError('firstMoveMustIncludeCorner');
+    });
+
+    it('calls checkSubsequentPlacement if the player has placed the first piece', () => {
+      const board = createBoard();
+      const player = Player.Red;
+      const coordinate = Board.startingCorner(player);
+      board.cells[0][0] = { owner: player };
+      const finalCoords = [{ x: 1, y: 1 }]
+      const piece: Piece = {
+        id: '1',
+        owner: player,
+        baseShape: [{ x: 1, y: 1 }],
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      expect(() => board.validatePlacement(piece, finalCoords)).not.toThrow();
+    });
+
+    it('does not throw an error if the player has placed the first piece', () => {
+      const board = createBoard();
+      const player = Player.Red;
+      const coordinate = Board.startingCorner(player);
+      board.cells[0][0] = { owner: player };
+      const finalCoords = [{ x: 1, y: 1 }]
+      const piece: Piece = {
+        id: '1',
+        owner: player,
+        baseShape: [{ x: 1, y: 1 }],
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      expect(() => board.validatePlacement(piece, finalCoords)).not.toThrow();
+    });
+
+    it('throws an error if the player has not placed the first piece', () => {
+      const board = createBoard();
+      const player = Player.Red;
+      const coordinate = Board.startingCorner(player);
+      const finalCoords = [{ x: coordinate.x + 1, y: coordinate.y + 1 }]
+      const piece: Piece = {
+        id: '1',
+        owner: player,
+        baseShape: finalCoords,
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      expect(() => board.validatePlacement(piece, finalCoords)).toThrowError('firstMoveMustIncludeCorner');
+    });
+  });
+
+  describe('checkBasicPlacementRules', () => {
+    it('throws an error if the coordinate is out of bounds', () => {
+      const board = createBoard();
+      const finalCoords = [{ x: -1, y: 0 }]
+      expect(() => board.checkBasicPlacementRules(finalCoords)).toThrowError('outOfBounds');
+    });
+
+    it('throws an error if the cell is occupied', () => {
+      const board = createBoard();
+      board.cells[0][0] = { owner: Player.Red };
+      const finalCoords = [{ x: 0, y: 0 }]
+      expect(() => board.checkBasicPlacementRules(finalCoords)).toThrowError('cellOccupied');
+    });
+
+    it('does not throw an error if the coordinate is valid and the cell is unoccupied', () => {
+      const board = createBoard();
+      const finalCoords = [{ x: 0, y: 0 }]
+      expect(() => board.checkBasicPlacementRules(finalCoords)).not.toThrow();
+    });
+
+    it('does not throw an error if the coordinate is valid and the cell is occupied', () => {
+      const board = createBoard();
+      board.cells[0][0] = { owner: Player.Red };
+      const finalCoords = [{ x: 1, y: 0 }]
+      expect(() => board.checkBasicPlacementRules(finalCoords)).not.toThrow
+    });
+  });
+
+  describe('isValidCoordinate', () => {
+    it('returns true if the coordinate is valid', () => {
+      const board = createBoard();
+      const result = board.isValidCoordinate({ x: 0, y: 0 });
+      expect(result).toBeTrue();
+    });
+
+    it('returns false if the coordinate is invalid', () => {
+      const board = createBoard();
+      const result = board.isValidCoordinate({ x: -1, y: 0 });
+      expect(result).toBeFalse();
+    });
+  });
+
   describe('checkFirstPlacement', () => {
     it('returns true if the player has placed the first piece', () => {
       const board = createBoard();
@@ -93,14 +243,14 @@ describe('Board', () => {
       const board = createBoard();
       const playerCells: Coordinate[] = [{ x: 0, y: 1 }]
       const result = board.checkCornerTouch({ x: 1, y: 0 }, playerCells);
-      expect(result).toEqual(true);
+      expect(result).toBeTrue();
     })
 
     it('returns false if the cell does not touch a corner', () => {
       const board = createBoard();
       const playerCells: Coordinate[] = [{ x: 0, y: 1 }]
       const result = board.checkCornerTouch({ x: 1, y: 1 }, playerCells);
-      expect(result).toEqual(false);
+      expect(result).toBeFalse();
     });
   });
 
@@ -110,14 +260,14 @@ describe('Board', () => {
       const playerCells: Coordinate[] = [{ x: 0, y: 0 }]
       const fc = { x: 0, y: 1 };
       const result = board.checkEdgeContact(fc, playerCells);
-      expect(result).toEqual(true);
+      expect(result).toBeTrue();
     })
 
     it('returns false if the cell does not touch an edge', () => {
       const board = createBoard();
       const playerCells: Coordinate[] = [{ x: 0, y: 0 }]
       const result = board.checkEdgeContact({ x: 1, y: 1 }, playerCells);
-      expect(result).toEqual(false);
+      expect(result).toBeFalse();
     });
   });
 
@@ -128,14 +278,14 @@ describe('Board', () => {
       const coordinate = Board.startingCorner(player);
       board.cells[0][0] = { owner: player };
       const result = board.hasPlacedFirstPiece(player);
-      expect(result).toEqual(true);
+      expect(result).toBeTrue();
     });
 
     it('returns false if the player has not placed the first piece', () => {
       const board = createBoard();
       const player = Player.Red;
       const result = board.hasPlacedFirstPiece(player);
-      expect(result).toEqual(false);
+      expect(result).toBeFalse();
     });
   });
 

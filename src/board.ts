@@ -9,6 +9,15 @@ export default class Board {
 
   constructor(public cells: Cell[][]) {}
 
+  placePiece(piece: Piece, origin: Coordinate) {
+    const finalCoords = this.computeFinalCoordinates(piece, origin);
+    this.validatePlacement(piece, finalCoords);
+
+    for (const bc of finalCoords) {
+      this.cells[bc.x][bc.y] = { owner: piece.owner };
+    }
+  }
+
   /**
    * 指定のピースを特定の座標に置けるかどうか判定します（実際には置かない）。
    * @param piece 配置可否を判定するピース

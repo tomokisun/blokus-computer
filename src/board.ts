@@ -1,5 +1,6 @@
 import Cell from './data-types/cell';
 import Coordinate, { diagonalNeighbors, edgeNeighbors, toKey } from './data-types/coordinate';
+import Piece from './data-types/piece';
 import Player from './data-types/player';
 
 export default class Board {
@@ -7,6 +8,27 @@ export default class Board {
   static height = 20;
 
   constructor(public cells: Cell[][]) {}
+
+  checkSubsequentPlacement(piece: Piece, finalCoords: Coordinate[]) {
+    const playerCells = this.getPlayerCells(piece.owner);
+    var cornerTouch = false;
+    var edgeContactWithSelf = false;
+
+    for (const fc of finalCoords) {
+      if (this.checkCornerTouch(fc, playerCells)) {
+        cornerTouch = true;
+      }
+      if (this.checkEdgeContact(fc, playerCells)) {
+        edgeContactWithSelf = true;
+      }
+    }
+    if (!cornerTouch) {
+      throw new Error('mustTouchOwnPieceByCorner');
+    }
+    if (edgeContactWithSelf) {
+      throw new Error('cannotShareEdgeWithOwnPiece');
+    }
+  }
 
   /**
    * 指定セルが斜め方向でプレイヤーのコマと接しているか確認します。

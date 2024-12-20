@@ -3,6 +3,8 @@ import Player from './data-types/player';
 import Board from './board';
 import Cell from './data-types/cell';
 import Coordinate from './data-types/coordinate';
+import Piece from './data-types/piece';
+import Rotation from './data-types/rotation';
 
 function createBoard(): Board {
   const cells: Cell[][] = [];
@@ -29,6 +31,24 @@ describe('Board', () => {
     it('returns 20', () => {
       const result = Board.height;
       expect(result).toEqual(20);
+    });
+  });
+
+  describe('checkSubsequentPlacement', () => {
+    it('returns true if the player has placed a piece adjacent to another piece', () => {
+      const board = createBoard();
+      board.cells[0][0] = { owner: Player.Red };
+      const finalCoords: Coordinate[] = [{ x: 1, y: 1 }]
+      const piece: Piece = {
+        id: '1',
+        owner: Player.Red,
+        baseShape: [{ x: 1, y: 1 }],
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      expect(() => board.checkSubsequentPlacement(piece, finalCoords)).not.toThrow();
     });
   });
 

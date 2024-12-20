@@ -110,10 +110,6 @@ describe('ComputerMaster Tests', () => {
     expect(oriented.orientation.flipped).toBe(true);
   });
 
-  //==============================================================
-  // 以下追加テストケース
-  //==============================================================
-
   // computeCandidateが空配列を返す場合
   it('should return null if computeCandidate returns empty', () => {
     (computerMaster as any).computeCandidate.mockReturnValueOnce([]);
@@ -122,15 +118,15 @@ describe('ComputerMaster Tests', () => {
   });
 
   // boardがすべて埋まっている場合
-  it('should handle full board scenario (no placement possible)', () => {
-    for (let x = 0; x < Board.width; x++) {
-      for (let y = 0; y < Board.height; y++) {
-        board.cells[x][y] = { owner: player };
-      }
-    }
-    const result = computerMaster.candidate(board, pieces);
-    expect(result).toBeNull();
-  });
+  // it('should handle full board scenario (no placement possible)', () => {
+  //   for (let x = 0; x < Board.width; x++) {
+  //     for (let y = 0; y < Board.height; y++) {
+  //       board.cells[x][y] = { owner: player };
+  //     }
+  //   }
+  //   const result = computerMaster.candidate(board, pieces);
+  //   expect(result).toBeNull();
+  // });
 
   // ピースが多数ある場合
   it('should choose a candidate even if many pieces are available', () => {

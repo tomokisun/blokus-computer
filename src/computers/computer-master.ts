@@ -34,11 +34,11 @@ export default class ComputerMaster extends ComputerBase implements Computer {
       return null;
     }
 
-    const maxPieceSize = Math.max(...myPieces.map(piece => piece.baseShape.length));
-    const currentCellsSize = this.getPlayerCells(board, this.owner).size;
-    const theoreticalMax = maxPieceSize * 2 + currentCellsSize;
-
     var firstMoves = this.computeCandidate(board, myPieces);
+    if (!firstMoves) {
+      console.log(`(${this.owner}) cannot place any piece and passes.`);
+      return null;
+    }
     if (firstMoves.length === 0) {
       console.log(`(${this.owner}) cannot place any piece and passes.`);
       return null;

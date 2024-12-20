@@ -9,6 +9,25 @@ export default class Board {
 
   constructor(public cells: Cell[][]) {}
 
+  /**
+   * 初回配置におけるチェック：プレイヤーの開始コーナーを含んでいるか確認します。
+   * @param piece 配置するピース
+   * @param finalCoords 占有するセル座標
+   */
+  checkFirstPlacement(piece: Piece, finalCoords: Coordinate[]) {
+    const corner = Board.startingCorner(piece.owner);
+    const finalCoordsSet = new Set(finalCoords.map(toKey));
+    const result = finalCoordsSet.has(toKey(corner));
+    if (!result) {
+      throw new Error('firstMoveMustIncludeCorner');
+    }
+  }
+
+  /**
+   * 2回目以降の配置チェック：角接触必須、辺接触禁止のルールを検証します。
+   * @param piece 配置対象のピース
+   * @param finalCoords 占有セル座標
+   */
   checkSubsequentPlacement(piece: Piece, finalCoords: Coordinate[]) {
     const playerCells = this.getPlayerCells(piece.owner);
     var cornerTouch = false;

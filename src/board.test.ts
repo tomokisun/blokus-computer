@@ -34,6 +34,25 @@ describe('Board', () => {
     });
   });
 
+  describe('checkFirstPlacement', () => {
+    it('returns true if the player has placed the first piece', () => {
+      const board = createBoard();
+      const player = Player.Red;
+      const coordinate = Board.startingCorner(player);
+      const finalCoords = [coordinate]
+      const piece: Piece = {
+        id: '1',
+        owner: player,
+        baseShape: [{ x: 1, y: 1 }],
+        orientation: {
+          rotation: Rotation.None,
+          flipped: false,
+        },
+      };
+      expect(() => board.checkFirstPlacement(piece, finalCoords)).not.toThrow();
+    });
+  })
+
   describe('checkSubsequentPlacement', () => {
     it('returns true if the player has placed a piece adjacent to another piece', () => {
       const board = createBoard();
